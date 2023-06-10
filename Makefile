@@ -14,7 +14,7 @@ test:
 	python3 -m poetry run pytest
 
 lint:
-	python3 -m poetry run flake8 gendiff
+	python3 -m poetry run flake8 page_analyzer
 
 dev:
 	poetry run flask --app page_analyzer:app run
