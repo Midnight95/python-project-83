@@ -6,7 +6,7 @@ authors = ["midnight <ivanator666@gmail.com>"]
 license = "GPL-3"
 readme = "README.md"
 packages = [
-    {include = "page_analizer"}
+    {include = "page_analyzer"}
 ]
 classifiers = [
     "Environment :: Console",
