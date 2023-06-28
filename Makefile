@@ -1,5 +1,3 @@
-FLASK_APP=page_analyzer:app
-
 install:
 	python3 -m poetry install
 
@@ -8,16 +6,12 @@ build:
 	python3 -m poetry build
 
 
-publish:
-	python3 -m poetry publish --dry-run
-
-
 package-install:
 	python3 -m pip install --user dist/*.whl
 
 
-#test:
-#	python3 -m poetry run pytest
+test:
+	python3 -m poetry run pytest
 
 
 lint:
