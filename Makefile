@@ -1,4 +1,5 @@
 #variables
+export FLASK_APP=page_analyzer:app
 PORT ?= 8000
 
 
@@ -23,13 +24,14 @@ lint:
 
 
 dev:
-	poetry run flask --app page_analyzer:app run
+	python3 -m poetry run flask --app $(FLASK_APP) run
 
 
 
 start:
-	poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer:app
+	python3 -m poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) $(FLASK_APP)
+
 
 
 routes:
-	poetry run python -m flask routes
+	python3 -m poetry run python -m flask routes
