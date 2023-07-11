@@ -9,3 +9,12 @@ body {
     background-attachment: fixed;
     background-size: cover;
     }
+
+
+.bg-top {
+    background-image: url(../img/bt-top.svg);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    }
