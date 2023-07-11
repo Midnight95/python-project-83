@@ -1,0 +1,11 @@
+.gradient-bg {
+   background: linear-gradient(270deg, #0D58A6 0%, #9eafd5);
+  }
+
+body {
+    background-image: url(../img/background.svg);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    }
