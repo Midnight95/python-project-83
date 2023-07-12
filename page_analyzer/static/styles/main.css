@@ -1,11 +1,12 @@
-.gradient-bg {
-   background: linear-gradient(270deg, #0D58A6 0%, #9eafd5);
-  }
-
-.bg-top {
+body {
     background-image: url(../img/background.svg);
     background-position: center center;
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
     }
+
+.gradient-bg {
+    background-color: #005aa6;
+    background-image: linear-gradient(180deg,#005aa6,#0469be)
+}
