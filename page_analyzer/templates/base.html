@@ -8,13 +8,25 @@
     <script src="{{ url_for('static',filename='styles/bootstrap.bundle.js') }}"></script>
     <title>Анализатор страниц</title>
 </head>
-<body>
-    <header>
+<body class="text-center text-bg-dark">
+    <div class="container d-flex min-vh-100 p-3 mx-auto flex-column">
+      <header class="row mb-auto">
+        <div>
+          <h3 class="float-md-start py-1">Анализатор страниц</h3>
+          <nav class="nav nav-masthead justify-content-center float-md-end">
+            <a class="nav-link fs-4 py-1 px-5" aria-current="page" href="#">Главная</a>
+            <a class="nav-link fs-4 py-1 px-0" href="#">Сайты</a>
+          </nav>
+        </div>
+      </header>
 
-    </header>
-    <main>
+      <main class="row">
         {% block main %}{% endblock %}
-    </main>
+      </main>
 
+      <footer class="mt-auto text-white-50">
+        <p><a href="https://github.com/Midnight95/python-project-83" class="text-white">Page analyzer</a>, by <a href="https://github.com/Midnight95/" class="text-white">me</a>.</p>
+      </footer>
+    </div>
 </body>
 </html>
