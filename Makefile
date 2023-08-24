@@ -27,10 +27,8 @@ dev:
 	poetry run flask --app $(FLASK_APP) run
 
 
-
 start:
 	poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) $(FLASK_APP)
-
 
 
 routes:
