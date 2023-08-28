@@ -31,5 +31,5 @@ start:
 	poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) $(FLASK_APP)
 
 
-routes:
-	poetry run python -m flask routes
+db:
+	psql $(DATABASE_URL) < database.sql
