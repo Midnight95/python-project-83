@@ -1,5 +1,4 @@
 import psycopg2
-import os
 
 
 def connect(url):
@@ -9,5 +8,10 @@ def connect(url):
 def close(conn):
     return conn.close()
 
+
+def insert(conn, url):
+    cur = conn.cursor()
+    cur.execute('INSERT INTO urls (name) VALUES (%s)', url)
+    conn.commit()
 
 

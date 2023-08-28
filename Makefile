@@ -8,7 +8,7 @@ install:
 
 
 build:
-	poetry build
+	./build.sh
 
 
 package-install:
@@ -30,6 +30,3 @@ dev:
 start:
 	poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) $(FLASK_APP)
 
-
-db:
-	psql $(DATABASE_URL) < database.sql

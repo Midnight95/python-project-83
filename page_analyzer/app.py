@@ -1,13 +1,12 @@
 from flask import Flask, render_template
-import psycopg2
-import os
-
-DATABASE_URL = os.getenv('DATABASE_URL')
-conn = psycopg2.connect(DATABASE_URL)
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 
 
 @app.route('/')
-def root():
+def index():
     return render_template('index.html')
+
+
