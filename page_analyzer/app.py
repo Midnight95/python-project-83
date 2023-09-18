@@ -13,35 +13,16 @@ class Database:
 
     def __enter__(self):
         self.conn = psycopg2.connect(self.addr)
-        self.cursor = self.conn.cursor()
-        return self
-
-    def insert(self):
-        self.cursor.execute(
-            "INSERT INTO urls (name, created_at) VALUES (%s, %s);",
-            (self.addr, date.today())
-        )
-
-    def check(self, address):
-        self.cursor.execute(
-            "SELECT * FROM urls WHERE name = (%s)",
-            (address,)
-        )
-
-        return self.cursor.fetchone()
+        return self.conn
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self.conn is not None:
-            if exc_type is None:
-                self.conn.commit()
-            else:
-                self.conn.rollback()
             self.conn.close()
 
 # Validator block
 
 
-def validate(addr):
+def validate(addr: str) -> list:
     errors = []
     if len(addr) > 255:
         errors.append('URL превышает 255 символов')
@@ -51,10 +32,9 @@ def validate(addr):
         errors.append('URL обязателен')
 
     return errors
-    #
 
 
-def normalize(addr):
+def normalize(addr: str) -> str:
     normalized_addr = urlparse(addr)
     return f'{normalized_addr.scheme}://{normalized_addr.netloc}'
 
