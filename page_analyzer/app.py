@@ -1,37 +1,23 @@
-from flask import Flask, render_template
+from flask import (
+    Flask,
+    render_template,
+    url_for,
+    request
+    )
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from validators.url import url
-from datetime import date
-import psycopg2
 load_dotenv()
 
 
-class Database:
-    def __init__(self, addr):
-        self.addr = addr
-
-    def __enter__(self):
-        self.conn = psycopg2.connect(self.addr)
-        return self.conn
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if self.conn is not None:
-            self.conn.close()
-
-# Validator block
-
-
-def validate(addr: str) -> list:
-    errors = []
-    if len(addr) > 255:
-        errors.append('URL превышает 255 символов')
-    if not url(addr):
-        errors.append('Некорректный URL')
+# Validator
+def validate(addr: str) -> str:
     if not url:
-        errors.append('URL обязателен')
-
-    return errors
+        return 'URL обязателен'
+    if not url(addr):
+        return 'Некорректный URL'
+    if len(addr) > 255:
+        return 'URL превышает 255 символов'
 
 
 def normalize(addr: str) -> str:
@@ -40,8 +26,6 @@ def normalize(addr: str) -> str:
 
 
 # App block
-
-
 app = Flask(__name__)
 
 
@@ -50,6 +34,18 @@ def index():
     return render_template('index.html')
 
 
-@app.get('/urls')
+@app.route('/urls', methods=['GET', 'POST'])
 def urls():
-    return render_template('urls.html')
+    if request.method == 'GET':
+        pass
+
+    if request.method == 'POST':
+        data = request.form.get('url')
+        errors = validate(data)
+
+        return data
+
+
+@app.get('/urls/<id>')
+def url_info(id):
+    pass
