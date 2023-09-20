@@ -24,7 +24,7 @@ lint:
 
 
 dev:
-	poetry run flask --app $(FLASK_APP) run
+	poetry run flask --app $(FLASK_APP) run --debug
 
 
 start:
