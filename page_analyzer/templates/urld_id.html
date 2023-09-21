@@ -10,22 +10,22 @@
           <tbody>
             <tr>
               <td>ID</td>
-              <td>"{{ id }}"</td>
+              <td>{{ id }}</td>
             </tr>
             <tr>
               <td>Имя</td>
-              <td>"{{ site }}"</td>
+              <td>{{ site }}</td>
             </tr>
             <tr>
               <td>Дата создания</td>
-              <td>"{{ date }}"</td>
+              <td>{{ date }}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
         <h2 class="mt-5 mb-3">Проверки</h2>
-        <form method="post" action="/urls/1/checks">
+        <form method="post" action="/urls/{{ id }}/checks">
         <input type="submit" class="btn btn-primary" value="Запустить проверку">
         </form>
 
