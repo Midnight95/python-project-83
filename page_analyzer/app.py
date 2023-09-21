@@ -11,9 +11,12 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse
 from validators.url import url
 
+from db import Database
+
 import os
 
 load_dotenv()
+db_url = os.getenv('DATABASE_URL')
 
 
 # Validator
@@ -46,13 +49,24 @@ def urls():
     if request.method == 'GET':
         return 'Woaw!'
 
-    if request.method == 'POST':
-        error = validate(request.form.get('url'))
+    elif request.method == 'POST':
+        data = request.form.get('url')
+        error = validate(data)
         if error:
             flash(error)
             return render_template('index.html', error=error)
 
-        return redirect(url_for('url_info', id=1), code=302)
+        with Database(db_url) as db:
+            data = normalize(data)
+            url_id = db.check(data)
+
+            if url_id:
+                flash('Страница уже существует')
+                return redirect(url_for('url_info', id=url_id), code=302)
+
+            else:
+                url_id = db.insert(data)
+                return redirect(url_for('url_info', id=url_id), code=302)
 
 
 @app.get('/urls/<id>')
