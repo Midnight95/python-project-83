@@ -11,20 +11,19 @@ class Database:
         self.cursor = self.conn.cursor()
         return self
 
-    def insert(self):
+    def insert(self, address):
         self.cursor.execute(
-            "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING *;",
-            (self.addr, date.today())
+            "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id;",
+            (address, date.today())
         )
-
         return self.cursor.fetchone()
 
     def check(self, address):
         self.cursor.execute(
-            "SELECT EXISTS(SELECT * FROM urls WHERE name = (%s))",
+            "SELECT id FROM urls WHERE name = (%s);",
             (address,)
         )
-        return self.cursor.fetchone()[0]
+        return self.cursor.fetchone()
 
     def render(self):
         self.cursor.execute("SELECT * FROM urls")
