@@ -3,29 +3,29 @@
 {% block main %}
 <div>
     <div class="container-lg mt-3">
-        <h1>Сайт: "{{ site }}"</h1>
+        <h1>Сайт: "{{ site.addr }}"</h1>
 
       <div class="table-responsive">
         <table class="table table-bordered table-hover text-nowrap" data-test="url">
           <tbody>
             <tr>
               <td>ID</td>
-              <td>{{ id }}</td>
+              <td>{{ site.id }}</td>
             </tr>
             <tr>
               <td>Имя</td>
-              <td>{{ site }}</td>
+              <td>{{ site.addr }}</td>
             </tr>
             <tr>
               <td>Дата создания</td>
-              <td>{{ date }}</td>
+              <td>{{ site.date }}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
         <h2 class="mt-5 mb-3">Проверки</h2>
-        <form method="post" action="/urls/{{ id }}/checks">
+        <form method="post" action="/urls/{{ site.id }}/checks">
         <input type="submit" class="btn btn-primary" value="Запустить проверку">
         </form>
 
