@@ -4,44 +4,47 @@
 
 <div class="container-lg mt-3">
       <h1>Сайты</h1>
-<div class="table-responsive">
-  <table class="table table-bordered table-hover text-nowrap" data-test="urls">
-    <thead>
-    <tr>
-      <th>ID</th>
-      <th>Имя</th>
-      <th>Последняя проверка</th>
-      <th>Код ответа</th>
-    </tr>
-    </thead>
-    <tbody>
 
-    {% if sites %}
-        {% for site in sites %}
-            <tr>
-              <td>{{ site.id }}</td>
-              <td>
-                <a href="/urls/{{ site.id }}">
-                    {{ site.addr }}
-                </a>
-              </td>
-              <td>
-                  {% if site.date %}
-                    {{ site.date }}
-                  {% endif %}
-              </td>
-              <td>
-                  {% if site.response %}
-                    {{ site.response }}
-                  {% endif %}
-              </td>
-            </tr>
-        {% endfor %}
-    {% endif %}
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover text-nowrap" data-test="urls">
+        <thead>
 
-    </tbody>
-  </table>
-</div>
+        <tr>
+          <th>ID</th>
+          <th>Имя</th>
+          <th>Последняя проверка</th>
+          <th>Код ответа</th>
+        </tr>
 
+        </thead>
+        <tbody>
+
+        {% if sites %}
+            {% for site in sites %}
+                <tr>
+                  <td>{{ site.id }}</td>
+                  <td>
+                    <a href="/urls/{{ site.id }}">
+                        {{ site.addr }}
+                    </a>
+                  </td>
+                  <td>
+                      {% if site.date %}
+                        {{ site.date }}
+                      {% endif %}
+                  </td>
+                  <td>
+                      {% if site.response %}
+                        {{ site.response }}
+                      {% endif %}
+                  </td>
+                </tr>
+            {% endfor %}
+        {% endif %}
+
+        </tbody>
+      </table>
     </div>
+
+</div>
 {% endblock %}

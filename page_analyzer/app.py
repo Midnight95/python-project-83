@@ -44,39 +44,41 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/urls/', methods=['GET', 'POST'])
-def urls():
-    if request.method == 'GET':
-        sites = []
+@app.get('/urls/')
+def get_urls():
+    sites = []
 
-        with Database(db_url) as db:
-            sites_tuple = db.render()
+    with Database(db_url) as db:
+        sites_tuple = db.render()
 
-        if sites_tuple:
-            for db_entry in sites_tuple:
-                id, addr, _ = db_entry
-                sites.append({'id': id, 'addr': addr})
-        return render_template('urls.html', sites=sites)
+    if sites_tuple:
+        for db_entry in sites_tuple:
+            id, addr, _ = db_entry
+            sites.append({'id': id, 'addr': addr})
+    return render_template('urls.html', sites=sites)
 
-    elif request.method == 'POST':
-        data = request.form.get('url')
-        error = validate(data)
-        if error:
-            flash(error, 'error')
-            return render_template('index.html', error=error)
 
-        with Database(db_url) as db:
-            data = normalize(data)
-            url_id = db.check(data)
+@app.post('/urls/')
+def post_urls():
+    data = request.form.get('url')
+    error = validate(data)
 
-            if url_id:
-                flash('Страница уже существует', 'info')
-                return redirect(url_for('url_info', id=url_id), code=302)
+    if error:
+        flash(error, 'error')
+        return render_template('index.html', error=error)
 
-            else:
-                flash('Страница успешно добавлена', 'success')
-                url_id = db.insert(data)
-                return redirect(url_for('url_info', id=url_id), code=302)
+    with Database(db_url) as db:
+        data = normalize(data)
+        url_id = db.check(data)
+
+        if url_id:
+            flash('Страница уже существует', 'info')
+            return redirect(url_for('url_info', id=url_id), code=302)
+
+        else:
+            flash('Страница успешно добавлена', 'success')
+            url_id = db.insert(data)
+            return redirect(url_for('url_info', id=url_id), code=302)
 
 
 @app.get('/urls/<id>')
