@@ -21,35 +21,17 @@
         </nav>
     </header>
 
-    {% with messages = get_flashed_messages(category_filter=["error"]) %}
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-danger" role="alert">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    {% set categories = {'error': 'danger', 'info': 'info', 'success': 'success'} %}
 
-    {% with messages = get_flashed_messages(category_filter=["info"]) %}
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-info" role="alert">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    {% with messages = get_flashed_messages(category_filter=["success"]) %}
-        {% if messages %}
-            {% for message in messages %}
-             <div class="alert alert-success" role="alert">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-
-
-
-
-
+    {% for category in categories %}
+        {% with messages = get_flashed_messages(category_filter=[category]) %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ categories[category] }}" role="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    {% endfor %}
 
     <main class="flex-grow-1">
         {% block main %}{% endblock %}
