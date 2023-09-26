@@ -62,7 +62,7 @@ def urls():
         data = request.form.get('url')
         error = validate(data)
         if error:
-            flash(error)
+            flash(error, 'error')
             return render_template('index.html', error=error)
 
         with Database(db_url) as db:
@@ -70,10 +70,11 @@ def urls():
             url_id = db.check(data)
 
             if url_id:
-                flash('Страница уже существует')
+                flash('Страница уже существует', 'info')
                 return redirect(url_for('url_info', id=url_id), code=302)
 
             else:
+                flash('Страница успешно добавлена', 'success')
                 url_id = db.insert(data)
                 return redirect(url_for('url_info', id=url_id), code=302)
 
