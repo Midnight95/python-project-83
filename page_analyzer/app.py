@@ -77,12 +77,12 @@ def post_urls():
 
         else:
             flash('Страница успешно добавлена', 'success')
-            url_id = db.insert(data)
+            url_id = db.insert_urls(data)
             return redirect(url_for('url_info', id=url_id), code=302)
 
 
 @app.get('/urls/<id>')
-def url_info(id):
+def url_info(id, checks=None):
     with Database(db_url) as db:
         site_tuple = db.find(id)
         id, addr, date = site_tuple
@@ -92,4 +92,19 @@ def url_info(id):
             'date': date
         }
 
-    return render_template('urld_id.html', site=site)
+    return render_template('urld_id.html', site=site, checks=checks)
+
+
+@app.post('/urls/<id>/checks')
+def check_url(id):
+
+    checks = []
+
+    with Database(db_url) as db:
+        checks_tuple = db.insert_checks(id)
+        if checks_tuple:
+            for db_entry in checks_tuple:
+                id, url_id, _, _, _, _, created_at = db_entry  # THIS IS A DRAFT I'M SORRY
+                checks.append({'id': id, 'url_id': url_id, 'created_at': created_at})
+
+        return redirect(url_for('url_info', id=id, checks=checks), code=302)

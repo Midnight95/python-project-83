@@ -11,7 +11,7 @@ class Database:
         self.cursor = self.conn.cursor()
         return self
 
-    def insert(self, address: str):
+    def insert_urls(self, address: str):
         self.cursor.execute(
             "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id;",
             (address, date.today())
@@ -19,9 +19,20 @@ class Database:
         entry_id = self.cursor.fetchone()
         return entry_id[0] if entry_id else None
 
+    def insert_checks(self, url_id):
+        self.cursor.execute(
+            "INSERT INTO urls_checks (url_id, created_at) VALUES (%s, %s);",
+            (url_id, date.today())
+        )
+        self.cursor.execute(
+            "SELECT * FROM urls_checks WHERE url_id = %s",
+            (url_id,)
+        )
+        return self.cursor.fetchall()
+
     def check(self, address: str):
         self.cursor.execute(
-            "SELECT id FROM urls WHERE name = (%s);",
+            "SELECT id FROM urls WHERE name = %s;",
             (address,)
         )
         entry_id = self.cursor.fetchone()
