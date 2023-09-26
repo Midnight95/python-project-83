@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse
 from validators.url import url
 
-from db import Database
+from page_analyzer.db import Database
 
 import os
 
@@ -47,7 +47,16 @@ def index():
 @app.route('/urls/', methods=['GET', 'POST'])
 def urls():
     if request.method == 'GET':
-        return 'Woaw!'
+        sites = []
+
+        with Database(db_url) as db:
+            sites_tuple = db.render()
+
+        if sites_tuple:
+            for db_entry in sites_tuple:
+                id, addr, _ = db_entry
+                sites.append({'id': id, 'addr': addr})
+        return render_template('urls.html', sites=sites)
 
     elif request.method == 'POST':
         data = request.form.get('url')
@@ -71,4 +80,13 @@ def urls():
 
 @app.get('/urls/<id>')
 def url_info(id):
-    pass
+    with Database(db_url) as db:
+        site_tuple = db.find(id)
+        id, addr, date = site_tuple
+        site = {
+            'id': id,
+            'addr': addr,
+            'date': date
+        }
+
+    return render_template('urld_id.html', site=site)
