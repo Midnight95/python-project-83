@@ -49,7 +49,7 @@ def get_urls():
     sites = []
 
     with Database(db_url) as db:
-        sites_tuple = db.render()
+        sites_tuple = db.render('urls')
 
     if sites_tuple:
         for db_entry in sites_tuple:
@@ -81,22 +81,27 @@ def post_urls():
             return redirect(url_for('url_info', id=url_id), code=302)
 
 
-@app.get('/urls/<id>')
-def url_info(id, checks=None):
+def find_url(id):
     with Database(db_url) as db:
-        site_tuple = db.find(id)
+        site_tuple = db.render('urls', id, 'id')
         id, addr, date = site_tuple
         site = {
             'id': id,
             'addr': addr,
             'date': date
         }
+    return site
 
-    return render_template('urld_id.html', site=site, checks=checks)
+
+@app.get('/urls/<id>')
+def url_info(id):
+    site = find_url(id)
+    return render_template('urld_id.html', site=site)
 
 
 @app.post('/urls/<id>/checks')
 def check_url(id):
+    site = find_url(id)
 
     checks = []
 
@@ -107,4 +112,4 @@ def check_url(id):
                 id, url_id, _, _, _, _, created_at = db_entry  # THIS IS A DRAFT I'M SORRY
                 checks.append({'id': id, 'url_id': url_id, 'created_at': created_at})
 
-        return redirect(url_for('url_info', id=id, checks=checks), code=302)
+        return render_template('urld_id.html', site=site, checks=checks)
