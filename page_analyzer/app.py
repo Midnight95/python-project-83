@@ -1,3 +1,5 @@
+
+
 from flask import (
     Flask,
     render_template,
@@ -10,10 +12,12 @@ from flask import (
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from validators.url import url
+from datetime import date
 
 from page_analyzer.db import Database
 
 import os
+
 
 load_dotenv()
 db_url = os.getenv('DATABASE_URL')
@@ -46,15 +50,8 @@ def index():
 
 @app.get('/urls/')
 def get_urls():
-    sites = []
-
     with Database(db_url) as db:
-        sites_tuple = db.render('urls')
-
-    if sites_tuple:
-        for db_entry in sites_tuple:
-            id, addr, _ = db_entry
-            sites.append({'id': id, 'addr': addr})
+        sites = db.render(table='urls')
     return render_template('urls.html', sites=sites)
 
 
@@ -66,50 +63,47 @@ def post_urls():
     if error:
         flash(error, 'error')
         return render_template('index.html', error=error)
+    else:
+        data = normalize(data)
 
     with Database(db_url) as db:
-        data = normalize(data)
-        url_id = db.check(data)
+        row = db.render('urls', item=data, col='name')
 
-        if url_id:
+        if row:
             flash('Страница уже существует', 'info')
+            url_id = row[0]['id']
             return redirect(url_for('url_info', id=url_id), code=302)
 
         else:
             flash('Страница успешно добавлена', 'success')
-            url_id = db.insert_urls(data)
-            return redirect(url_for('url_info', id=url_id), code=302)
+            row = db.insert(
+                table='urls',
+                cols=('name', 'created_at'),
+                data=(data, date.today())
+            )
+            return row
+            return redirect(url_for('url_info', id=row[0]), code=302)
 
 
-def find_url(id):
+def render_url(id, table, col):
     with Database(db_url) as db:
-        site_tuple = db.render('urls', id, 'id')
-        id, addr, date = site_tuple
-        site = {
-            'id': id,
-            'addr': addr,
-            'date': date
-        }
+        site = db.render(table=table, item=id, col=col)
     return site
 
 
 @app.get('/urls/<id>')
 def url_info(id):
-    site = find_url(id)
-    return render_template('urld_id.html', site=site)
+    site = render_url(id=id, table='urls', col='id')[0]
+    checks = render_url(id=id, table='urls_checks', col='url_id')
+    return render_template('urls_id.html', site=site, checks=checks)
 
 
 @app.post('/urls/<id>/checks')
 def check_url(id):
-    site = find_url(id)
-
-    checks = []
-
     with Database(db_url) as db:
-        checks_tuple = db.insert_checks(id)
-        if checks_tuple:
-            for db_entry in checks_tuple:
-                id, url_id, _, _, _, _, created_at = db_entry  # THIS IS A DRAFT I'M SORRY
-                checks.append({'id': id, 'url_id': url_id, 'created_at': created_at})
-
-        return render_template('urld_id.html', site=site, checks=checks)
+        db.insert(
+            table='urls_checks',
+            cols=('url_id', 'created_at'),
+            data=(id, date.today())
+        )
+        return redirect(url_for('url_info', id=id), code=302)

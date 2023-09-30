@@ -11,23 +11,28 @@ class Database:
         self.cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         return self
 
-    def insert(self, table: str, cols: list, *args):
+    def insert(self, table: str, cols, data: tuple) -> dict:
         self.cursor.execute(
             f'INSERT INTO {table} ({", ".join(str(i) for i in cols)}) '
-            f'VALUES ({", ".join("%s" for i in cols)}) RETURNING *;',
-            args
+            f'VALUES ({", ".join("%s" for _ in cols)}) RETURNING id;',
+            data
         )
         return self.cursor.fetchone()
 
-    def render(self, table, to_find=None, col=None, show='*'):
-        if to_find and col:
+    def render(self, table: str, item=None, col=None, show='*') -> tuple:
+        """
+        Renders all rows from a table if item is not provided,
+        or shows all rows where item == col.
+        table: str
+        """
+        if item is None or col is None:
+            self.cursor.execute(f'SELECT {show} FROM {table}')
+            return self.cursor.fetchall()
+        else:
             self.cursor.execute(
                 f'SELECT {show} FROM {table} WHERE {col} = (%s)',
-                (to_find,)
+                (item,)
                 )
-            return self.cursor.fetchone()
-        else:
-            self.cursor.execute(f'SELECT {show} FROM {table}')
             return self.cursor.fetchall()
 
     def __exit__(self, exc_type, exc_value, traceback):
