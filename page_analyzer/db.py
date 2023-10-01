@@ -13,26 +13,26 @@ class Database:
         )
         return self
 
-    def insert(self, table: str, cols, data: tuple):
+    def insert(self, table: str, cols, data):
         self.cursor.execute(
             f'INSERT INTO {table} ({", ".join(str(i) for i in cols)}) '
             f'VALUES ({", ".join("%s" for _ in cols)}) RETURNING id;',
-            data
+            data if isinstance(data, tuple) else tuple(data)
         )
-        return self.cursor.fetchone()
+        return self.cursor.fetchone().get('id')
 
-    def render(self, table: str, item=None, col=None, show='*') -> tuple:
+    def render(self, table: str, item=None, col=None) -> tuple:
         """
         Renders all rows from a table if item is not provided,
         or shows all rows where item == col.
         table: str
         """
         if item is None or col is None:
-            self.cursor.execute(f'SELECT {show} FROM {table}')
+            self.cursor.execute(f'SELECT * FROM {table}')
             return self.cursor.fetchall()
         else:
             self.cursor.execute(
-                f'SELECT {show} FROM {table} WHERE {col} = (%s)',
+                f'SELECT * FROM {table} WHERE {col} = (%s)',
                 (item,)
             )
             return self.cursor.fetchall()

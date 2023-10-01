@@ -53,7 +53,7 @@ def get_urls():
     return render_template('urls.html', sites=sites)
 
 
-@app.post('/urls/')
+@app.post('/urls')
 def post_urls():
     data = request.form.get('url')
     error = validate(data)
@@ -61,24 +61,24 @@ def post_urls():
     if error:
         flash(error, 'error')
         return render_template('index.html', error=error), 422
-    else:
-        data = normalize(data)
+
+    data = normalize(data)
 
     with Database(db_url) as db:
         row = db.render('urls', item=data, col='name')
 
         if row:
             flash('Страница уже существует', 'info')
-            return redirect(url_for('url_info', id=row[0]['id']), code=302)
+            return redirect(url_for('url_info', id=row[0]['id']))
 
         else:
             flash('Страница успешно добавлена', 'success')
-            row = db.insert(
+            id = db.insert(
                 table='urls',
                 cols=('name', 'created_at'),
                 data=(data, date.today())
             )
-            return redirect(url_for('url_info', id=row['id']), code=302)
+            return redirect(url_for('url_info', id=id))
 
 
 def render_url(id, table, col):
@@ -131,4 +131,4 @@ def check_url(id):
             )
         )
     flash('Страница успешно проверена', 'success')
-    return redirect(url_for('url_info', id=id), code=302)
+    return redirect(url_for('url_info', id=id))
