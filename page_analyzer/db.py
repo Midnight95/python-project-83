@@ -8,7 +8,9 @@ class Database:
 
     def __enter__(self):
         self.conn = psycopg2.connect(self.db_url)
-        self.cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        self.cursor = self.conn.cursor(
+            cursor_factory=psycopg2.extras.RealDictCursor
+        )
         return self
 
     def insert(self, table: str, cols, data: tuple) -> dict:
@@ -32,7 +34,7 @@ class Database:
             self.cursor.execute(
                 f'SELECT {show} FROM {table} WHERE {col} = (%s)',
                 (item,)
-                )
+            )
             return self.cursor.fetchall()
 
     def __exit__(self, exc_type, exc_value, traceback):
