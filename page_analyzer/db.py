@@ -13,7 +13,7 @@ class Database:
         )
         return self
 
-    def insert(self, table: str, cols, data: tuple) -> dict:
+    def insert(self, table: str, cols, data: tuple):
         self.cursor.execute(
             f'INSERT INTO {table} ({", ".join(str(i) for i in cols)}) '
             f'VALUES ({", ".join("%s" for _ in cols)}) RETURNING id;',

@@ -78,7 +78,7 @@ def post_urls():
                 cols=('name', 'created_at'),
                 data=(data, date.today())
             )
-            return redirect(url_for('url_info', id=row[0]), code=302)
+            return redirect(url_for('url_info', id=row['id']), code=302)
 
 
 def render_url(id, table, col):
@@ -96,9 +96,13 @@ def url_info(id):
 
 @app.post('/urls/<id>/checks')
 def check_url(id):
-    status_code = requests.get(
-        render_url(id=id, table='urls', col='id')[0]['name']
-    ).status_code
+    try:
+        status_code = requests.get(
+            render_url(id=id, table='urls', col='id')[0]['name']
+        ).status_code
+    except requests.exceptions.RequestException:
+        flash('Произошла ошибка при проверке', 'error')
+        return redirect(url_for('url_info', id=id))
 
     with Database(db_url) as db:
         db.insert(
