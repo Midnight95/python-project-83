@@ -24,12 +24,13 @@ psycopg2-binary = "^2.9.7"
 validators = "^0.22.0"
 requests = "^2.31.0"
 beautifulsoup4 = "^4.12.2"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
 flake8 = "^6.0.0"
 coverage = "^7.2.5"
-python-dotenv = "^1.0.0"
+
 
 [build-system]
 requires = ["poetry-core"]
