@@ -98,7 +98,8 @@ def url_info(id):
 def check_url(id):
     try:
         page = requests.get(
-            render_url(id=id, table='urls', col='id')[0]['name']
+            render_url(id=id, table='urls', col='id')[0]['name'],
+            timeout=5
         )
     except requests.exceptions.RequestException:
         flash('Произошла ошибка при проверке', 'error')
