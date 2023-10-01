@@ -4,6 +4,7 @@ from datetime import date
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
+from bs4 import BeautifulSoup
 from flask import (
     Flask,
     render_template,
@@ -68,8 +69,7 @@ def post_urls():
 
         if row:
             flash('Страница уже существует', 'info')
-            url_id = row[0]['id']
-            return redirect(url_for('url_info', id=url_id), code=302)
+            return redirect(url_for('url_info', id=row[0]['id']), code=302)
 
         else:
             flash('Страница успешно добавлена', 'success')
@@ -97,12 +97,17 @@ def url_info(id):
 @app.post('/urls/<id>/checks')
 def check_url(id):
     try:
-        status_code = requests.get(
+        page = requests.get(
             render_url(id=id, table='urls', col='id')[0]['name']
-        ).status_code
+        )
     except requests.exceptions.RequestException:
         flash('Произошла ошибка при проверке', 'error')
         return redirect(url_for('url_info', id=id))
+
+    soup = BeautifulSoup(page.text, 'html.parser')
+    crutch = soup.find('meta', attrs={'name': 'description'})
+    if crutch:
+        crutch = crutch['content']
 
     with Database(db_url) as db:
         db.insert(
@@ -110,12 +115,19 @@ def check_url(id):
             cols=(
                 'url_id',
                 'status_code',
+                'h1',
+                'title',
+                'description',
                 'created_at'
             ),
             data=(
                 id,
-                status_code,
+                page.status_code,
+                soup.h1.string,
+                soup.title.string,
+                crutch,
                 date.today(),
             )
         )
+
         return redirect(url_for('url_info', id=id), code=302)
