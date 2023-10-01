@@ -60,7 +60,7 @@ def post_urls():
 
     if error:
         flash(error, 'error')
-        return render_template('index.html', error=error)
+        return render_template('index.html', error=error), 422
     else:
         data = normalize(data)
 
@@ -130,5 +130,5 @@ def check_url(id):
                 date.today(),
             )
         )
-
-        return redirect(url_for('url_info', id=id), code=302)
+    flash('Страница успешно проверена', 'success')
+    return redirect(url_for('url_info', id=id), code=302)
