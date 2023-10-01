@@ -1,5 +1,9 @@
+import os
+import requests
+from datetime import date
+from urllib.parse import urlparse
 
-
+from dotenv import load_dotenv
 from flask import (
     Flask,
     render_template,
@@ -8,16 +12,9 @@ from flask import (
     request,
     flash
 )
-
-from dotenv import load_dotenv
-from urllib.parse import urlparse
 from validators.url import url
-from datetime import date
 
 from page_analyzer.db import Database
-
-import os
-
 
 load_dotenv()
 db_url = os.getenv('DATABASE_URL')
@@ -81,7 +78,6 @@ def post_urls():
                 cols=('name', 'created_at'),
                 data=(data, date.today())
             )
-            return row
             return redirect(url_for('url_info', id=row[0]), code=302)
 
 
@@ -100,10 +96,22 @@ def url_info(id):
 
 @app.post('/urls/<id>/checks')
 def check_url(id):
+    status_code = requests.get(
+        render_url(id=id, table='urls', col='id')[0]['name']
+    ).status_code
+
     with Database(db_url) as db:
         db.insert(
             table='urls_checks',
-            cols=('url_id', 'created_at'),
-            data=(id, date.today())
+            cols=(
+                'url_id',
+                'status_code',
+                'created_at'
+            ),
+            data=(
+                id,
+                status_code,
+                date.today(),
+            )
         )
         return redirect(url_for('url_info', id=id), code=302)
