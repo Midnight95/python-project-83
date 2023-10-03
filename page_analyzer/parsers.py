@@ -14,4 +14,3 @@ def get_last_status_codes(checks):
             }
 
     return result
-

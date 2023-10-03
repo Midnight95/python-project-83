@@ -29,13 +29,17 @@
                     </a>
                   </td>
                   <td>
-                      {% if site.created_at %}
-                        {{ site.created_at }}
+                      {% if checks %}
+                          {% if checks[site.id] %}
+                            {{ checks[site.id].created_at }}
+                          {% endif %}
                       {% endif %}
                   </td>
                   <td>
-                      {% if site.response %}
-                        {{ site.response }}
+                      {% if checks %}
+                          {% if checks[site.id] %}
+                            {{ checks[site.id].status_code }}
+                          {% endif %}
                       {% endif %}
                   </td>
                 </tr>

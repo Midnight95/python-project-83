@@ -104,7 +104,12 @@ def check_url(id):
             render_url(id=id, table='urls', col='id')[0]['name'],
             timeout=5
         )
-    except requests.exceptions.RequestException:
+    except (
+            requests.Timeout,
+            requests.ConnectionError,
+            requests.HTTPError,
+            requests.RequestException
+    ):
         flash('Произошла ошибка при проверке', 'error')
         return redirect(url_for('url_info', id=id))
 
