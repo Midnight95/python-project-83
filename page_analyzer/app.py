@@ -104,17 +104,10 @@ def check_url(id):
             render_url(id=id, table='urls', col='id')[0]['name'],
             timeout=5
         )
-    except (
-            requests.Timeout,
-            requests.ConnectionError,
-            requests.HTTPError,
-            requests.RequestException
-    ):
+        page.raise_for_status()
+    except requests.RequestException:
         flash('Произошла ошибка при проверке', 'error')
         return redirect(url_for('url_info', id=id))
-    else:
-        if page.status_code != 200:
-            flash('Произошла ошибка при проверке', 'danger')
 
     soup = BeautifulSoup(page.text, 'html.parser')
     crutch = soup.find('meta', attrs={'name': 'description'})
