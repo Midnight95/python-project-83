@@ -1,10 +1,8 @@
 import os
 import requests
-from datetime import date
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
-from bs4 import BeautifulSoup
 from flask import (
     Flask,
     render_template,
@@ -16,14 +14,18 @@ from flask import (
 from validators.url import url
 
 from page_analyzer.db import Database
-from page_analyzer.parsers import get_last_status_codes
-
+from page_analyzer.config import (
+    get_url_config,
+    get_urls_checks,
+    get_last_status_codes
+)
 
 load_dotenv()
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
 db_url = os.getenv('DATABASE_URL')
 
 
-# Validator
 def validate(addr: str):
     if not url:
         return 'URL обязателен'
@@ -38,9 +40,10 @@ def normalize(addr: str):
     return f'{normalized_addr.scheme}://{normalized_addr.netloc}'
 
 
-# App block
-app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY')
+def render_url(id, table, col):
+    with Database(db_url) as db:
+        site = db.render(table=table, item=id, col=col)
+    return site
 
 
 @app.route('/')
@@ -52,8 +55,8 @@ def index():
 def get_urls():
     with Database(db_url) as db:
         sites = db.render(table='urls')
-        checks = get_last_status_codes(db.render(table='urls_checks'))
-    return render_template('urls.html', sites=sites, checks=checks)
+        latest_checks = get_last_status_codes(db.render(table='urls_checks'))
+    return render_template('urls.html', sites=sites, checks=latest_checks)
 
 
 @app.post('/urls')
@@ -76,18 +79,13 @@ def post_urls():
 
         else:
             flash('Страница успешно добавлена', 'success')
+            urls = get_url_config(data)
             id = db.insert(
                 table='urls',
-                cols=('name', 'created_at'),
-                data=(data, date.today())
+                cols=urls.keys(),
+                data=urls.values()
             )
             return redirect(url_for('url_info', id=id))
-
-
-def render_url(id, table, col):
-    with Database(db_url) as db:
-        site = db.render(table=table, item=id, col=col)
-    return site
 
 
 @app.get('/urls/<id>')
@@ -99,40 +97,22 @@ def url_info(id):
 
 @app.post('/urls/<id>/checks')
 def check_url(id):
+    addr = render_url(id=id, table='urls', col='id')[0]['name']
     try:
-        page = requests.get(
-            render_url(id=id, table='urls', col='id')[0]['name'],
-            timeout=5
-        )
+        page = requests.get(addr, timeout=5)
         page.raise_for_status()
     except requests.RequestException:
         flash('Произошла ошибка при проверке', 'error')
         return redirect(url_for('url_info', id=id))
 
-    soup = BeautifulSoup(page.text, 'html.parser')
-    crutch = soup.find('meta', attrs={'name': 'description'})
-    if crutch:
-        crutch = crutch['content']
+    checks = get_urls_checks(page, id)
 
     with Database(db_url) as db:
         db.insert(
             table='urls_checks',
-            cols=(
-                'url_id',
-                'status_code',
-                'h1',
-                'title',
-                'description',
-                'created_at'
-            ),
-            data=(
-                id,
-                page.status_code,
-                soup.h1.string,
-                soup.title.string,
-                crutch,
-                date.today(),
-            )
+            cols=checks.keys(),
+            data=checks.values()
         )
+
     flash('Страница успешно проверена', 'success')
     return redirect(url_for('url_info', id=id))
