@@ -16,6 +16,8 @@ from flask import (
 from validators.url import url
 
 from page_analyzer.db import Database
+from page_analyzer.parsers import get_last_status_codes
+
 
 load_dotenv()
 db_url = os.getenv('DATABASE_URL')
@@ -46,11 +48,12 @@ def index():
     return render_template('index.html')
 
 
-@app.get('/urls/')
+@app.get('/urls')
 def get_urls():
     with Database(db_url) as db:
         sites = db.render(table='urls')
-    return render_template('urls.html', sites=sites)
+        checks = get_last_status_codes(db.render(table='urls_checks'))
+    return render_template('urls.html', sites=sites, checks=checks)
 
 
 @app.post('/urls')
