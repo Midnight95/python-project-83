@@ -2,14 +2,23 @@ from datetime import date
 from bs4 import BeautifulSoup
 
 
-def get_url_config(name) -> dict:
+def get_url_config(url) -> dict:
+    """
+    Creates a dictionary with the provided url and current date
+    for the purpose of providing it to 'urls' table.
+    """
     return {
-        'name': name,
+        'name': url,
         'created_at': date.today()
     }
 
 
 def get_urls_checks(page, id) -> dict:
+    """
+    Parses the page object from requests using BeautifulSoup and
+    creates dict with information from it
+    for the purpose of providing it to 'urls_checks' table
+    """
     soup = BeautifulSoup(page.text, 'html.parser')
 
     h1 = soup.h1.string if soup.h1 else None
@@ -28,7 +37,11 @@ def get_urls_checks(page, id) -> dict:
     }
 
 
-def get_last_status_codes(checks):
+def get_last_status_codes(checks) -> dict:
+    """
+    Returns entries dict with last status codes for each URL
+    in the provided psycopg2 'dict' object.
+    """
     result = {}
 
     for item in checks:

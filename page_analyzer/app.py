@@ -27,6 +27,11 @@ db_url = os.getenv('DATABASE_URL')
 
 
 def validate(addr: str):
+    """
+    Checks if valid url is provided.
+
+    :return: Error string or nothing
+    """
     if not url:
         return 'URL обязателен'
     if not url(addr):
@@ -36,11 +41,25 @@ def validate(addr: str):
 
 
 def normalize(addr: str):
+    """
+    Normalizes the provided URL by removing any unnecessary components.
+
+    :return: Normalized URL.
+    """
     normalized_addr = urlparse(addr)
     return f'{normalized_addr.scheme}://{normalized_addr.netloc}'
 
 
 def render_url(id, table, col):
+    """
+    Retrieves all rows from the specified table where
+    the provided item matches the specified column.
+
+    :param id: The item to filter the rows by.
+    :param table: The name of the table (urls or urls_checks).
+    :param col: The name of the column to compare the item against.
+    :return: A list of dictionaries representing the matching rows.
+    """
     with Database(db_url) as db:
         site = db.render(table=table, item=id, col=col)
     return site
