@@ -99,32 +99,32 @@ def post_urls():
         else:
             flash('Страница успешно добавлена', 'success')
             urls = get_url_config(data)
-            id = db.insert(
+            url_id = db.insert(
                 table='urls',
                 cols=urls.keys(),
                 data=urls.values()
             )
-            return redirect(url_for('url_info', id=id))
+            return redirect(url_for('url_info', id=url_id))
 
 
-@app.get('/urls/<id>')
-def url_info(id):
-    site = render_url(id=id, table='urls', col='id')[0]
-    checks = render_url(id=id, table='urls_checks', col='url_id')
+@app.get('/urls/<int:id>')
+def url_info(_id: int):
+    site = render_url(id=_id, table='urls', col='id')[0]
+    checks = render_url(id=_id, table='urls_checks', col='url_id')
     return render_template('urls_id.html', site=site, checks=checks)
 
 
-@app.post('/urls/<id>/checks')
-def check_url(id):
-    addr = render_url(id=id, table='urls', col='id')[0]['name']
+@app.post('/urls/<int:id>/checks')
+def check_url(_id: int):
+    addr = render_url(id=_id, table='urls', col='id')[0]['name']
     try:
-        page = requests.get(addr, timeout=5)
-        page.raise_for_status()
+        _request = requests.get(addr, timeout=5)
+        _request.raise_for_status()
     except requests.RequestException:
         flash('Произошла ошибка при проверке', 'error')
-        return redirect(url_for('url_info', id=id))
+        return redirect(url_for('url_info', id=_id))
 
-    checks = get_urls_checks(page, id)
+    checks = get_urls_checks(_request, _id)
 
     with Database(db_url) as db:
         db.insert(
@@ -134,4 +134,4 @@ def check_url(id):
         )
 
     flash('Страница успешно проверена', 'success')
-    return redirect(url_for('url_info', id=id))
+    return redirect(url_for('url_info', id=_id))
