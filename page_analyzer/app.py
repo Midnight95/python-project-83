@@ -9,7 +9,8 @@ from flask import (
     url_for,
     redirect,
     request,
-    flash
+    flash,
+    abort
 )
 from validators.url import url
 
@@ -109,7 +110,10 @@ def post_urls():
 
 @app.get('/urls/<int:id>')
 def url_info(id: int):
-    site = render_url(id=id, table='urls', col='id')[0]
+    site = render_url(id=id, table='urls', col='id')
+    if not site:
+        return abort(404)
+    site = site[0]
     checks = render_url(id=id, table='urls_checks', col='url_id')
     return render_template('urls_id.html', site=site, checks=checks)
 
