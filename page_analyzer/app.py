@@ -108,23 +108,23 @@ def post_urls():
 
 
 @app.get('/urls/<int:id>')
-def url_info(_id: int):
-    site = render_url(id=_id, table='urls', col='id')[0]
-    checks = render_url(id=_id, table='urls_checks', col='url_id')
+def url_info(id: int):
+    site = render_url(id=id, table='urls', col='id')[0]
+    checks = render_url(id=id, table='urls_checks', col='url_id')
     return render_template('urls_id.html', site=site, checks=checks)
 
 
 @app.post('/urls/<int:id>/checks')
-def check_url(_id: int):
-    addr = render_url(id=_id, table='urls', col='id')[0]['name']
+def check_url(id: int):
+    addr = render_url(id=id, table='urls', col='id')[0]['name']
     try:
         _request = requests.get(addr, timeout=5)
         _request.raise_for_status()
     except requests.RequestException:
         flash('Произошла ошибка при проверке', 'error')
-        return redirect(url_for('url_info', id=_id))
+        return redirect(url_for('url_info', id=id))
 
-    checks = get_urls_checks(_request, _id)
+    checks = get_urls_checks(_request, id)
 
     with Database(db_url) as db:
         db.insert(
@@ -134,4 +134,4 @@ def check_url(_id: int):
         )
 
     flash('Страница успешно проверена', 'success')
-    return redirect(url_for('url_info', id=_id))
+    return redirect(url_for('url_info', id=id))
