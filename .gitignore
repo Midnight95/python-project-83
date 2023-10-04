@@ -8,3 +8,4 @@ __pycache__
 coverage.xml
 test-reporter-latest-linux-amd64
 .ipynb_checkpoints
+*.sock
