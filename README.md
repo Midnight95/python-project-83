@@ -8,7 +8,7 @@
 
 Page Analyzer is a web app that analyzes web pages for SEO suitability, similar to PageSpeed Insights.
 
-### You can check project [here](http://granovskydev.ru/) 
+### You can check project [here](http://page-analyzer.granovskydev.ru/)
 (sorry no ssl right now)
 
 ***
