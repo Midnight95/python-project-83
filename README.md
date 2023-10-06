@@ -8,7 +8,7 @@
 
 Page Analyzer is a web app that analyzes web pages for SEO suitability, similar to PageSpeed Insights.
 
-### You can check project [here](http://granovskydev.ru/) 
+### You can check project [here](http://page-analyzer.granovskydev.ru/)
 (sorry no ssl right now)
 
 ***
@@ -33,16 +33,16 @@ Page Analyzer is a web app that analyzes web pages for SEO suitability, similar 
 *** 
 
 ## Running the app
-To use properly you'll need to provide it with a proper `$DATABASE_URL` and `$SECRET_KEY` vars.
+To use app properly you'll need to provide it with `$DATABASE_URL` and `$SECRET_KEY` vars.
 
-You can just create `.env` and define this variable there.
+You can create `.env` file inside of this project and define variables there or do it your way.
 ```
 DATABASE_URL = 'postgresql://{user}:{password}@{host}:{port}/{db}'
 # postgresql://janedoe:mypassword@localhost:5432/mydb
 SECRET_KEY = 'I AM THE SECRET'
 ```
 
-Run ```make build``` to install all required packages and create necessary table in database.
+Run ```make build``` to install all required packages and create necessary tables in database.
 
 You can run an app from gunicorn with `make start`, from flask in debug mode with `make dev` or you can create a service file to run it constantly.
 ```
