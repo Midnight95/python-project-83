@@ -1,6 +1,5 @@
 import os
 import requests
-from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 from flask import (
@@ -12,9 +11,10 @@ from flask import (
     flash,
     abort
 )
-from validators.url import url
 
-from page_analyzer.db import Database
+
+from page_analyzer.db import Database, render_url
+from page_analyzer.validator import validate, normalize
 from page_analyzer.config import (
     get_url_config,
     get_urls_checks,
@@ -24,46 +24,7 @@ from page_analyzer.config import (
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
-db_url = os.getenv('DATABASE_URL')
-
-
-def validate(addr: str):
-    """
-    Checks if valid url is provided.
-
-    :return: Error string or nothing
-    """
-    if not url:
-        return 'URL обязателен'
-    if not url(addr):
-        return 'Некорректный URL'
-    if len(addr) > 255:
-        return 'URL превышает 255 символов'
-
-
-def normalize(addr: str):
-    """
-    Normalizes the provided URL by removing any unnecessary components.
-
-    :return: Normalized URL.
-    """
-    normalized_addr = urlparse(addr)
-    return f'{normalized_addr.scheme}://{normalized_addr.netloc}'
-
-
-def render_url(id, table, col):
-    """
-    Retrieves all rows from the specified table where
-    the provided item matches the specified column.
-
-    :param id: The item to filter the rows by.
-    :param table: The name of the table (urls or urls_checks).
-    :param col: The name of the column to compare the item against.
-    :return: A list of dictionaries representing the matching rows.
-    """
-    with Database(db_url) as db:
-        site = db.render(table=table, item=id, col=col)
-    return site
+app.config['DATABASE_URL'] = os.getenv('DATABASE_URL')
 
 
 @app.route('/')
@@ -73,7 +34,7 @@ def index():
 
 @app.get('/urls')
 def get_urls():
-    with Database(db_url) as db:
+    with Database(app.config['DATABASE_URL']) as db:
         sites = db.render(table='urls')
         latest_checks = get_last_status_codes(db.render(table='urls_checks'))
     return render_template('urls.html', sites=sites, checks=latest_checks)
@@ -90,7 +51,7 @@ def post_urls():
 
     data = normalize(data)
 
-    with Database(db_url) as db:
+    with Database(app.config['DATABASE_URL']) as db:
         row = db.render('urls', item=data, col='name')
 
         if row:
@@ -110,17 +71,26 @@ def post_urls():
 
 @app.get('/urls/<int:id>')
 def url_info(id: int):
-    site = render_url(id=id, table='urls', col='id')
+    site = render_url(
+        id=id, table='urls', col='id',
+        db_url=app.config['DATABASE_URL']
+    )
     if not site:
         return abort(404)
     site = site[0]
-    checks = render_url(id=id, table='urls_checks', col='url_id')
+    checks = render_url(
+        id=id, table='urls_checks', col='url_id',
+        db_url=app.config['DATABASE_URL']
+    )
     return render_template('urls_id.html', site=site, checks=checks)
 
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id: int):
-    addr = render_url(id=id, table='urls', col='id')[0]['name']
+    addr = render_url(
+        id=id, table='urls', col='id',
+        db_url=app.config['DATABASE_URL']
+    )[0]['name']
     try:
         _request = requests.get(addr, timeout=5)
         _request.raise_for_status()
@@ -130,7 +100,7 @@ def check_url(id: int):
 
     checks = get_urls_checks(_request, id)
 
-    with Database(db_url) as db:
+    with Database(app.config['DATABASE_URL']) as db:
         db.insert(
             table='urls_checks',
             cols=checks.keys(),

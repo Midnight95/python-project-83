@@ -3,7 +3,7 @@ import psycopg2.extras
 
 
 class Database:
-    def __init__(self, db_url: str):
+    def __init__(self, db_url):
         """
         Initializes the Database object with the provided database URL.
 
@@ -70,3 +70,18 @@ class Database:
             else:
                 self.conn.rollback()
             self.conn.close()
+
+
+def render_url(id, table, col, db_url):
+    """
+    Retrieves all rows from the specified table where
+    the provided item matches the specified column.
+
+    :param id: The id of an item to filter the rows by.
+    :param table: The name of the table (urls or urls_checks).
+    :param col: The name of the column to compare the item against.
+    :return: A list of dictionaries representing the matching rows.
+    """
+    with Database(db_url) as db:
+        url = db.render(table=table, item=id, col=col)
+    return url
