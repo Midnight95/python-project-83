@@ -1,4 +1,4 @@
-from page_analyzer.config import get_last_status_codes
+from page_analyzer.utils import get_last_status_codes
 from datetime import date
 
 

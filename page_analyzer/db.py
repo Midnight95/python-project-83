@@ -72,7 +72,7 @@ class Database:
             self.conn.close()
 
 
-def render_url(id, table, col, db_url):
+def render_data(id, table, col, db_url):
     """
     Retrieves all rows from the specified table where
     the provided item matches the specified column.
@@ -83,5 +83,5 @@ def render_url(id, table, col, db_url):
     :return: A list of dictionaries representing the matching rows.
     """
     with Database(db_url) as db:
-        url = db.render(table=table, item=id, col=col)
-    return url
+        data = db.render(table=table, item=id, col=col)
+    return data

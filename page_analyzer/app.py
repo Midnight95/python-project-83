@@ -13,9 +13,9 @@ from flask import (
 )
 
 
-from page_analyzer.db import Database, render_url
+from page_analyzer.db import Database, render_data
 from page_analyzer.validator import validate, normalize
-from page_analyzer.config import (
+from page_analyzer.utils import (
     get_url_config,
     get_urls_checks,
     get_last_status_codes
@@ -71,14 +71,14 @@ def post_urls():
 
 @app.get('/urls/<int:id>')
 def url_info(id: int):
-    site = render_url(
+    site = render_data(
         id=id, table='urls', col='id',
         db_url=app.config['DATABASE_URL']
     )
     if not site:
         return abort(404)
     site = site[0]
-    checks = render_url(
+    checks = render_data(
         id=id, table='urls_checks', col='url_id',
         db_url=app.config['DATABASE_URL']
     )
@@ -87,7 +87,7 @@ def url_info(id: int):
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id: int):
-    addr = render_url(
+    addr = render_data(
         id=id, table='urls', col='id',
         db_url=app.config['DATABASE_URL']
     )[0]['name']
