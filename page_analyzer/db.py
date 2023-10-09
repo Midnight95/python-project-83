@@ -17,7 +17,7 @@ class Database:
         """
         self.conn = psycopg2.connect(self.db_url)
         self.cursor = self.conn.cursor(
-            cursor_factory=psycopg2.extras.RealDictCursor
+            cursor_factory=psycopg2.extras.DictCursor
         )
         return self
 
@@ -38,7 +38,7 @@ class Database:
         )
         return self.cursor.fetchone().get('id')
 
-    def render(self, table: str, item=None, col=None) -> tuple:
+    def render(self, table: str, item=None, col=None):
         """
         Renders all rows from a table if item is not provided,
         or all rows where item is equal to one in the provided column.
@@ -50,13 +50,13 @@ class Database:
         """
         if item is None or col is None:
             self.cursor.execute(f'SELECT * FROM {table}')
-            return self.cursor.fetchall()
         else:
             self.cursor.execute(
                 f'SELECT * FROM {table} WHERE {col} = (%s)',
                 (item,)
             )
-            return self.cursor.fetchall()
+        data = self.cursor.fetchall()
+        return data[0] if len(data) == 1 else data
 
     def __exit__(self, exc_type, exc_value, traceback):
         """

@@ -52,11 +52,11 @@ def post_urls():
     data = normalize(data)
 
     with Database(app.config['DATABASE_URL']) as db:
-        row = db.render('urls', item=data, col='name')
+        urls_data = db.render('urls', item=data, col='name')
 
-        if row:
+        if urls_data:
             flash('Страница уже существует', 'info')
-            return redirect(url_for('url_info', id=row[0]['id']))
+            return redirect(url_for('url_info', id=urls_data['id']))
 
         else:
             flash('Страница успешно добавлена', 'success')
@@ -77,7 +77,6 @@ def url_info(id: int):
     )
     if not site:
         return abort(404)
-    site = site[0]
     checks = render_data(
         id=id, table='urls_checks', col='url_id',
         db_url=app.config['DATABASE_URL']
@@ -87,10 +86,12 @@ def url_info(id: int):
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id: int):
-    addr = render_data(
+    data = render_data(
         id=id, table='urls', col='id',
         db_url=app.config['DATABASE_URL']
-    )[0]['name']
+    )
+
+    addr = data.get('name')
     try:
         _request = requests.get(addr, timeout=5)
         _request.raise_for_status()
