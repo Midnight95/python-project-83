@@ -7,7 +7,6 @@ class Database:
         self.db_url = db_url
 
     def __enter__(self):
-
         self.conn = psycopg2.connect(self.db_url)
         self.cursor = self.conn.cursor(
             cursor_factory=psycopg2.extras.DictCursor
