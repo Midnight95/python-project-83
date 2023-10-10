@@ -45,7 +45,7 @@ class Database:
             "SELECT id FROM urls WHERE name = (%s)",
             (name,)
         )
-        return self.cursor.fetchone()
+        return self.cursor.fetchone().get('id')
 
     def get_urls_by_id(self, id):
         self.cursor.execute(
