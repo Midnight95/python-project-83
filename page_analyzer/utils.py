@@ -1,8 +1,10 @@
+import requests
+
 from datetime import date
 from bs4 import BeautifulSoup
 
 
-def get_url_config(url) -> dict:
+def get_urls(url) -> dict:
     """
     Creates a dictionary with the provided url and current date
     for the purpose of providing it to 'urls' table.
@@ -13,13 +15,19 @@ def get_url_config(url) -> dict:
     }
 
 
-def get_urls_checks(page, id) -> dict:
+def get_urls_checks(url, id):
     """
     Parses the page object from requests using BeautifulSoup and
     creates dict with information from it
     for the purpose of providing it to 'urls_checks' table
     """
-    soup = BeautifulSoup(page.text, 'html.parser')
+    try:
+        request = requests.get(url, timeout=5)
+        request.raise_for_status()
+    except requests.RequestException:
+        return
+
+    soup = BeautifulSoup(request.text, 'html.parser')
 
     h1 = soup.h1.string if soup.h1 else None
     title = soup.title.string if soup.title else None
@@ -29,7 +37,7 @@ def get_urls_checks(page, id) -> dict:
 
     return {
         'url_id': id,
-        'status_code': page.status_code,
+        'status_code': request.status_code,
         'h1': h1,
         'title': title,
         'description': description,

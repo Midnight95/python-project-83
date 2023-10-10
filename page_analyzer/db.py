@@ -56,7 +56,7 @@ class Database:
                 (item,)
             )
         data = self.cursor.fetchall()
-        return data[0] if len(data) == 1 else data
+        return data[0] if (len(data) == 1) else data
 
     def __exit__(self, exc_type, exc_value, traceback):
         """

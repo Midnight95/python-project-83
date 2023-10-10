@@ -1,5 +1,4 @@
 import os
-import requests
 
 from dotenv import load_dotenv
 from flask import (
@@ -16,7 +15,7 @@ from flask import (
 from page_analyzer.db import Database, render_data
 from page_analyzer.validator import validate, normalize
 from page_analyzer.utils import (
-    get_url_config,
+    get_urls,
     get_urls_checks,
     get_last_status_codes
 )
@@ -33,7 +32,7 @@ def index():
 
 
 @app.get('/urls')
-def get_urls():
+def urls_get():
     with Database(app.config['DATABASE_URL']) as db:
         sites = db.render(table='urls')
         latest_checks = get_last_status_codes(db.render(table='urls_checks'))
@@ -41,7 +40,7 @@ def get_urls():
 
 
 @app.post('/urls')
-def post_urls():
+def urls_post():
     data = request.form.get('url')
     error = validate(data)
 
@@ -59,13 +58,13 @@ def post_urls():
             return redirect(url_for('url_info', id=urls_data['id']))
 
         else:
-            flash('Страница успешно добавлена', 'success')
-            urls = get_url_config(data)
+            urls = get_urls(data)
             url_id = db.insert(
                 table='urls',
                 cols=urls.keys(),
                 data=urls.values()
             )
+            flash('Страница успешно добавлена', 'success')
             return redirect(url_for('url_info', id=url_id))
 
 
@@ -81,6 +80,10 @@ def url_info(id: int):
         id=id, table='urls_checks', col='url_id',
         db_url=app.config['DATABASE_URL']
     )
+    # временный костыль
+    if checks:
+        if not isinstance(checks[0], list):
+            checks = [checks]
     return render_template('urls_id.html', site=site, checks=checks)
 
 
@@ -91,15 +94,10 @@ def check_url(id: int):
         db_url=app.config['DATABASE_URL']
     )
 
-    addr = data.get('name')
-    try:
-        _request = requests.get(addr, timeout=5)
-        _request.raise_for_status()
-    except requests.RequestException:
+    checks = get_urls_checks(data.get('name'), id)
+    if not checks:
         flash('Произошла ошибка при проверке', 'error')
         return redirect(url_for('url_info', id=id))
-
-    checks = get_urls_checks(_request, id)
 
     with Database(app.config['DATABASE_URL']) as db:
         db.insert(
