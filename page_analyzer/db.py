@@ -17,14 +17,14 @@ def connect():
 
 def execute(query: str, data=None, fetch: str = None) -> int or list:
     with connect() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute(query, data, cursor_factory=DictCursor)
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            cursor.execute(query, data)
             response = None
             match fetch:
                 case 'all':
                     response = cursor.fetchall()
                 case 'one':
-                    response = cursor.fatchone()
+                    response = cursor.fetchone()
             return response
 
 
@@ -34,9 +34,13 @@ def get_urls():
     return response
 
 
-def get_urls_checks():
-    query = "SELECT * FROM urls_checks"
-    response = execute(query, fetch='all')
+def get_urls_checks(id=None) -> list[dict]:
+    if id:
+        query = "SELECT * FROM urls_checks WHERE url_id = (%s)"
+        response = execute(query, (id,), fetch='all')
+    else:
+        query = "SELECT * FROM urls_checks"
+        response = execute(query, fetch='all')
     return response
 
 
@@ -58,12 +62,14 @@ def insert_urls(url):
     query = "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"
     data = url, date.today()
     response = execute(query, data, fetch='one')
-    return response
+    return response.get('id')
 
 
 def insert_urls_checks(check: dict):
     query = """
-    INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at) 
-    VALUES (%(url_id)s, %(status_code)s, %(h1)s, %(title)s, %(description)s, %(created_at)s) 
+    INSERT INTO urls_checks (url_id, status_code,
+    h1, title, description, created_at)
+    VALUES (%(url_id)s, %(status_code)s, %(h1)s,
+    %(title)s, %(description)s, %(created_at)s)
     """
     execute(query, check)
