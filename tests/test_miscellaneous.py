@@ -1,4 +1,4 @@
-from page_analyzer.utils import get_last_status_codes
+from page_analyzer.parser import find_last_status_codes
 from datetime import date
 
 
@@ -12,7 +12,7 @@ def test_get_last_status_codes():
         1: {'id': 2, 'status_code': 404, 'created_at': date.today()},
         2: {'id': 3, 'status_code': 200, 'created_at': date.today()}
     }
-    assert get_last_status_codes(checks) == expected_result
+    assert find_last_status_codes(checks) == expected_result
 
 
 class MockPage:

@@ -10,15 +10,9 @@ from flask import (
     flash,
     abort
 )
-
-
-from page_analyzer.db import Database
+from page_analyzer import db
 from page_analyzer.validator import validate, normalize
-from page_analyzer.utils import (
-    get_urls,
-    get_urls_checks,
-    get_last_status_codes
-)
+from page_analyzer.parser import make_check, find_last_status_codes
 
 load_dotenv()
 app = Flask(__name__)
@@ -33,9 +27,8 @@ def index():
 
 @app.get('/urls')
 def urls_get():
-    with Database(app.config['DATABASE_URL']) as db:
-        sites = db.get_urls()
-        latest_checks = get_last_status_codes(db.get_urls_checks())
+    sites = db.get_urls()
+    latest_checks = find_last_status_codes(db.get_urls_checks())
     return render_template('urls.html', sites=sites, checks=latest_checks)
 
 
@@ -49,30 +42,21 @@ def urls_post():
         return render_template('index.html', error=error), 422
 
     data = normalize(data)
+    url_id = db.find_existing_url(data)
 
-    with Database(app.config['DATABASE_URL']) as db:
-        url_id = db.get_urls_id_by_name(data)
-
-        if url_id:
-            flash('Страница уже существует', 'info')
-            return redirect(url_for('url_info', id=url_id))
-
-        else:
-            urls = get_urls(data)
-            url_id = db.insert(
-                table='urls',
-                cols=urls.keys(),
-                data=urls.values()
-            )
-            flash('Страница успешно добавлена', 'success')
-            return redirect(url_for('url_info', id=url_id))
+    if url_id:
+        flash('Страница уже существует', 'info')
+        return redirect(url_for('url_info', id=url_id))
+    else:
+        url_id = db.insert_urls(data)
+        flash('Страница успешно добавлена', 'success')
+        return redirect(url_for('url_info', id=url_id))
 
 
 @app.get('/urls/<int:id>')
 def url_info(id: int):
-    with Database(app.config['DATABASE_URL']) as db:
-        site = db.get_urls_by_id(id)
-        checks = db.get_urls_checks_by_id(id)
+    site = db.get_url(id)
+    checks = db.get_urls_checks(id)
     if not site:
         return abort(404)
     return render_template('urls_id.html', site=site, checks=checks)
@@ -80,18 +64,13 @@ def url_info(id: int):
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id: int):
-    with Database(app.config['DATABASE_URL']) as db:
-        urls = db.get_urls_by_id(id)
-        checks = get_urls_checks(urls['name'], id)
-        if not checks:
-            flash('Произошла ошибка при проверке', 'error')
-            return redirect(url_for('url_info', id=id))
+    urls = db.get_url(id)
+    checks = make_check(urls.get('name'), id)
+    if not checks:
+        flash('Произошла ошибка при проверке', 'error')
+        return redirect(url_for('url_info', id=id))
 
-        db.insert(
-            table='urls_checks',
-            cols=checks.keys(),
-            data=checks.values()
-        )
+    db.insert_urls_checks(checks)
 
     flash('Страница успешно проверена', 'success')
     return redirect(url_for('url_info', id=id))
