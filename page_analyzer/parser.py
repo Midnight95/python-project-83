@@ -1,21 +1,9 @@
 import requests
-
 from datetime import date
 from bs4 import BeautifulSoup
 
 
-def get_urls(url) -> dict:
-    """
-    Creates a dictionary with the provided url and current date
-    for the purpose of providing it to 'urls' table.
-    """
-    return {
-        'name': url,
-        'created_at': date.today()
-    }
-
-
-def get_urls_checks(url, id):
+def make_check(url, id):
     """
     Parses the page object from requests using BeautifulSoup and
     creates dict with information from it
@@ -45,7 +33,7 @@ def get_urls_checks(url, id):
     }
 
 
-def get_last_status_codes(checks) -> dict:
+def find_last_status_codes(checks) -> dict:
     """
     Returns entries dict with last status codes for each URL
     in the provided psycopg2 'dict' object.
