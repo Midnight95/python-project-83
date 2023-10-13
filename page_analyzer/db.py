@@ -11,11 +11,12 @@ def connect():
     try:
         conn = psycopg2.connect(db_url)
         return conn
-    except psycopg2.Error:
+    except psycopg2.Error as e:
         print('Can\'t connect to the database!')
+        raise e
 
 
-def execute(query: str, data=None, fetch: str = None) -> int or list:
+def execute(query: str, data=None, fetch: str = None):
     with connect() as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute(query, data)
@@ -30,18 +31,18 @@ def execute(query: str, data=None, fetch: str = None) -> int or list:
 
 def get_urls():
     query = "SELECT * FROM urls"
-    response = execute(query, fetch='all')
-    return response
+    urls = execute(query, fetch='all')
+    return urls
 
 
-def get_urls_checks(id=None) -> list[dict]:
+def get_urls_checks(id=None):
     if id:
         query = "SELECT * FROM urls_checks WHERE url_id = (%s)"
-        response = execute(query, (id,), fetch='all')
+        checks = execute(query, (id,), fetch='all')
     else:
         query = "SELECT * FROM urls_checks"
-        response = execute(query, fetch='all')
-    return response
+        checks = execute(query, fetch='all')
+    return checks
 
 
 def get_url(urls_id: int):
@@ -50,15 +51,15 @@ def get_url(urls_id: int):
     return response
 
 
-def find_existing_url(url):
+def find_existing_url(url: str):
     query = "SELECT id FROM urls WHERE name = (%s)"
-    response = execute(query, (url,), fetch='one')
-    if response:
-        response = response.get('id')
-    return response
+    url_id = execute(query, (url,), fetch='one')
+    if url_id:
+        url_id = url_id.get('id')
+    return url_id
 
 
-def insert_urls(url):
+def insert_urls(url: str):
     query = "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"
     data = url, date.today()
     response = execute(query, data, fetch='one')
