@@ -27,12 +27,6 @@ def execute(connection, query: str, data=None, fetch: str = None):
         return result
 
 
-def get_urls(connection):
-    query = "SELECT * FROM urls"
-    urls = execute(connection, query, fetch='all')
-    return urls
-
-
 def get_urls_with_last_checks(connection):
     query = """
             SELECT DISTINCT
@@ -44,14 +38,14 @@ def get_urls_with_last_checks(connection):
             FROM urls LEFT JOIN urls_checks ON urls.id = urls_checks.url_id
             ORDER BY urls.id, urls_checks.id DESC
             """
-    checks = execute(connection, query, fetch='all')
-    return checks
+    urls = execute(connection, query, fetch='all')
+    return urls
 
 
 def get_url_checks(url_check_id, connection):
     query = "SELECT * FROM urls_checks WHERE url_id = (%s)"
-    checks = execute(connection, query, (url_check_id,), fetch='all')
-    return checks
+    url_checks = execute(connection, query, (url_check_id,), fetch='all')
+    return url_checks
 
 
 def get_url_by_id(url_id: int, connection):
