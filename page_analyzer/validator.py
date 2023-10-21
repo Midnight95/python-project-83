@@ -2,7 +2,7 @@ from urllib.parse import urlparse
 from validators.url import url
 
 
-def validate(addr: str):
+def validate_url(addr: str):
     """
     Checks if valid url is provided.
 
@@ -16,7 +16,7 @@ def validate(addr: str):
         return 'URL превышает 255 символов'
 
 
-def normalize(addr: str):
+def normalize_url(addr: str):
     """
     Normalizes the provided URL by removing any unnecessary components.
 

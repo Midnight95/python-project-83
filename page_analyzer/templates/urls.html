@@ -19,26 +19,26 @@
         </thead>
         <tbody>
 
-        {% if sites %}
-            {% for site in sites %}
+        {% if urls %}
+            {% for url in urls %}
                 <tr>
-                  <td>{{ site.id }}</td>
+                  <td>{{ url.id }}</td>
                   <td>
-                    <a href="/urls/{{ site.id }}">
-                        {{ site.name }}
+                    <a href="/urls/{{ url.id }}">
+                        {{ url.name }}
                     </a>
                   </td>
                   <td>
                       {% if checks %}
-                          {% if checks[site.id] %}
-                            {{ checks[site.id].created_at }}
+                          {% if checks[(url.id) - 1] %}
+                            {{ checks[(url.id) - 1].created_at }}
                           {% endif %}
                       {% endif %}
                   </td>
                   <td>
                       {% if checks %}
-                          {% if checks[site.id] %}
-                            {{ checks[site.id].status_code }}
+                          {% if checks[(url.id) - 1] %}
+                            {{ checks[(url.id) - 1].status_code }}
                           {% endif %}
                       {% endif %}
                   </td>
@@ -51,4 +51,6 @@
     </div>
 
 </div>
+
+    {{ checks }}
 {% endblock %}

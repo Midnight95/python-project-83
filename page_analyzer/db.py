@@ -1,6 +1,5 @@
 import psycopg2
 from psycopg2.extras import DictCursor
-from datetime import date
 from flask import current_app
 
 
@@ -16,61 +15,62 @@ def connect():
         raise e
 
 
-def execute(query: str, data=None, fetch: str = None):
-    with connect() as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query, data)
-            response = None
-            match fetch:
-                case 'all':
-                    response = cursor.fetchall()
-                case 'one':
-                    response = cursor.fetchone()
-            return response
+def execute(connection, query: str, data=None, fetch: str = None):
+    with connection.cursor(cursor_factory=DictCursor) as cursor:
+        cursor.execute(query, data)
+        result = None
+        match fetch:
+            case 'all':
+                result = cursor.fetchall()
+            case 'one':
+                result = cursor.fetchone()
+        return result
 
 
-def get_urls():
+def get_urls(connection):
     query = "SELECT * FROM urls"
-    urls = execute(query, fetch='all')
+    urls = execute(connection, query, fetch='all')
     return urls
 
 
-def get_urls_checks(id=None):
-    if id:
-        query = "SELECT * FROM urls_checks WHERE url_id = (%s)"
-        checks = execute(query, (id,), fetch='all')
-    else:
-        query = "SELECT * FROM urls_checks"
-        checks = execute(query, fetch='all')
+# отэто
+def get_last_urls_checks(connection):
+    query = ("""SELECT DISTINCT ON (url_id) url_id, created_at, status_code
+             FROM urls_checks ORDER BY url_id, created_at DESC""")
+    checks = execute(connection, query, fetch='all')
     return checks
 
 
-def get_url(urls_id: int):
+def get_url_checks(url_check_id, connection):
+    query = "SELECT * FROM urls_checks WHERE url_id = (%s)"
+    checks = execute(connection, query, (url_check_id,), fetch='all')
+    return checks
+
+
+def get_url_by_id(url_id: int, connection):
     query = "SELECT * FROM urls WHERE id = (%s)"
-    response = execute(query, (urls_id,), fetch='one')
-    return response
+    result = execute(connection, query, (url_id,), fetch='one')
+    return result
 
 
-def find_existing_url(url: str):
-    query = "SELECT id FROM urls WHERE name = (%s)"
-    url_id = execute(query, (url,), fetch='one')
-    if url_id:
-        url_id = url_id.get('id')
-    return url_id
+def get_url_by_name(url: str, connection):
+    query = "SELECT * FROM urls WHERE name = (%s)"
+    result = execute(connection, query, (url,), fetch='one')
+    return result
 
 
-def insert_urls(url: str):
-    query = "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"
-    data = url, date.today()
-    response = execute(query, data, fetch='one')
-    return response.get('id')
+def insert_url(url: str, connection):
+    query = "INSERT INTO urls (name) VALUES (%s) RETURNING id"
+    data = (url,)
+    result = execute(connection, query, data, fetch='one')
+    return result.get('id')
 
 
-def insert_urls_checks(check: dict):
+def insert_url_check(check: dict, connection):
     query = """
     INSERT INTO urls_checks (url_id, status_code,
-    h1, title, description, created_at)
+    h1, title, description)
     VALUES (%(url_id)s, %(status_code)s, %(h1)s,
-    %(title)s, %(description)s, %(created_at)s)
+    %(title)s, %(description)s)
     """
-    execute(query, check)
+    execute(connection, query, check)

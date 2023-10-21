@@ -1,5 +1,4 @@
 import requests
-from datetime import date
 from bs4 import BeautifulSoup
 
 
@@ -29,7 +28,6 @@ def make_check(url, id):
         'h1': h1,
         'title': title,
         'description': description,
-        'created_at': date.today()
     }
 
 
