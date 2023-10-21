@@ -62,8 +62,7 @@ def get_url_by_name(url: str, connection):
 
 def insert_url(url: str, connection):
     query = "INSERT INTO urls (name) VALUES (%s) RETURNING id"
-    data = (url,)
-    result = execute(connection, query, data, fetch='one')
+    result = execute(connection, query, (url,), fetch='one')
     return result.get('id')
 
 
