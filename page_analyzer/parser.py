@@ -29,24 +29,3 @@ def make_check(url, id):
         'title': title,
         'description': description,
     }
-
-
-def find_last_status_codes(checks) -> dict:
-    """
-    Returns entries dict with last status codes for each URL
-    in the provided psycopg2 'dict' object.
-    """
-    result = {}
-
-    for item in checks:
-        id = item['id']
-        url_id = item['url_id']
-
-        if url_id not in result or result.get(url_id, {}).get('id', -1) < id:
-            result[url_id] = {
-                'id': id,
-                'status_code': item['status_code'],
-                'created_at': item['created_at']
-            }
-
-    return result

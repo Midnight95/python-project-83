@@ -29,18 +29,10 @@
                     </a>
                   </td>
                   <td>
-                      {% if checks %}
-                          {% if checks[(url.id) - 1] %}
-                            {{ checks[(url.id) - 1].created_at }}
-                          {% endif %}
-                      {% endif %}
+                    {{ url.created_at }}
                   </td>
                   <td>
-                      {% if checks %}
-                          {% if checks[(url.id) - 1] %}
-                            {{ checks[(url.id) - 1].status_code }}
-                          {% endif %}
-                      {% endif %}
+                    {{ url.status_code }}
                   </td>
                 </tr>
             {% endfor %}

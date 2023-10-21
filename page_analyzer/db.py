@@ -33,10 +33,17 @@ def get_urls(connection):
     return urls
 
 
-# отэто
-def get_last_urls_checks(connection):
-    query = ("""SELECT DISTINCT ON (url_id) url_id, created_at, status_code
-             FROM urls_checks ORDER BY url_id, created_at DESC""")
+def get_urls_with_last_checks(connection):
+    query = """
+            SELECT DISTINCT
+            ON (urls.id)
+            urls.id AS id,
+            urls.name AS name,
+            urls_checks.created_at AS created_at,
+            urls_checks.status_code AS status_code
+            FROM urls LEFT JOIN urls_checks ON urls.id = urls_checks.url_id
+            ORDER BY urls.id, urls_checks.id DESC
+            """
     checks = execute(connection, query, fetch='all')
     return checks
 

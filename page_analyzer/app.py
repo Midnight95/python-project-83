@@ -12,7 +12,7 @@ from flask import (
 )
 from page_analyzer import db
 from page_analyzer.validator import validate_url, normalize_url
-from page_analyzer.parser import make_check, find_last_status_codes
+from page_analyzer.parser import make_check
 
 load_dotenv()
 app = Flask(__name__)
@@ -28,9 +28,8 @@ def index():
 @app.get('/urls')
 def urls_get():
     with db.connect() as conn:
-        urls = db.get_urls(conn)
-        latest_checks = db.get_last_urls_checks(conn)
-    return render_template('urls.html', urls=urls, checks=latest_checks)
+        urls = db.get_urls_with_last_checks(conn)
+    return render_template('urls.html', urls=urls)
 
 
 @app.post('/urls')
