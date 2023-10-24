@@ -27,7 +27,7 @@ def index():
 
 @app.get('/urls')
 def urls_get():
-    with db.connect() as conn:
+    with db.Connection(app.config['DATABASE_URL']) as conn:
         urls = db.get_urls_with_last_checks(conn)
     return render_template('urls.html', urls=urls)
 
@@ -39,28 +39,28 @@ def urls_post():
 
     if url_validation_error:
         flash(url_validation_error, 'error')
-        return render_template('index.html', error=url_validation_error), 422
+        return render_template('index.html'), 422
 
     normalized_url = normalize_url(url_string)
 
-    with db.connect() as conn:
-        url = db.get_url_by_name(normalized_url, conn)
-
-        if url:
-            url_id = url.get('id')
-            flash('Страница уже существует', 'info')
-            return redirect(url_for('url_info', id=url_id))
-        else:
-            url_id = db.insert_url(normalized_url, conn)
+    with db.Connection(app.config['DATABASE_URL']) as conn:
+        url = db.get_url_by_name(conn, normalized_url)
+        if not url:
+            url_id = db.add_url(conn, normalized_url)
             flash('Страница успешно добавлена', 'success')
             return redirect(url_for('url_info', id=url_id))
+
+    url_id = url.get('id')
+    flash('Страница уже существует', 'info')
+    return redirect(url_for('url_info', id=url_id))
 
 
 @app.get('/urls/<int:id>')
 def url_info(id: int):
-    with db.connect() as conn:
-        url = db.get_url_by_id(id, conn)
-        checks = db.get_url_checks(id, conn)
+    with db.Connection(app.config['DATABASE_URL']) as conn:
+        url = db.get_url_by_id(conn, id)
+        checks = db.get_url_checks(conn, id)
+
     if not url:
         return abort(404)
     return render_template('urls_id.html', url=url, checks=checks)
@@ -68,13 +68,13 @@ def url_info(id: int):
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id: int):
-    with db.connect() as conn:
-        url = db.get_url_by_id(id, conn)
+    with db.Connection(app.config['DATABASE_URL']) as conn:
+        url = db.get_url_by_id(conn, id)
         check = make_check(url.get('name'), id)
         if not check:
             flash('Произошла ошибка при проверке', 'error')
             return redirect(url_for('url_info', id=id))
-        db.insert_url_check(check, conn)
+        db.add_url_check(conn, check)
 
     flash('Страница успешно проверена', 'success')
     return redirect(url_for('url_info', id=id))

@@ -1,18 +1,22 @@
 import psycopg2
 from psycopg2.extras import DictCursor
-from flask import current_app
 
 
-def connect():
-    db_url = current_app.config.get('DATABASE_URL')
-    if not db_url:
-        raise ValueError('$DATABASE_URL is not found')
-    try:
-        conn = psycopg2.connect(db_url)
-        return conn
-    except psycopg2.Error as e:
-        print('Can\'t connect to the database!')
-        raise e
+class Connection:
+    def __init__(self, db_url):
+        self.db_url = db_url
+
+    def __enter__(self):
+        self.conn = psycopg2.connect(self.db_url)
+        return self.conn
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.conn is not None:
+            if exc_type is None:
+                self.conn.commit()
+            else:
+                self.conn.rollback()
+            self.conn.close()
 
 
 def execute(connection, query: str, data=None, fetch: str = None):
@@ -42,31 +46,31 @@ def get_urls_with_last_checks(connection):
     return urls
 
 
-def get_url_checks(url_check_id, connection):
+def get_url_checks(connection, url_check_id: int):
     query = "SELECT * FROM urls_checks WHERE url_id = (%s)"
     url_checks = execute(connection, query, (url_check_id,), fetch='all')
     return url_checks
 
 
-def get_url_by_id(url_id: int, connection):
+def get_url_by_id(connection, url_id: int):
     query = "SELECT * FROM urls WHERE id = (%s)"
     result = execute(connection, query, (url_id,), fetch='one')
     return result
 
 
-def get_url_by_name(url: str, connection):
+def get_url_by_name(connection, url: str):
     query = "SELECT * FROM urls WHERE name = (%s)"
     result = execute(connection, query, (url,), fetch='one')
     return result
 
 
-def insert_url(url: str, connection):
+def add_url(connection, url: str):
     query = "INSERT INTO urls (name) VALUES (%s) RETURNING id"
     result = execute(connection, query, (url,), fetch='one')
     return result.get('id')
 
 
-def insert_url_check(check: dict, connection):
+def add_url_check(connection, check: dict):
     query = """
     INSERT INTO urls_checks (url_id, status_code,
     h1, title, description)
