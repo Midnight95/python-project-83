@@ -10,6 +10,7 @@ from flask import (
     flash,
     abort
 )
+
 from page_analyzer import db
 from page_analyzer.validator import validate_url, normalize_url
 from page_analyzer.parser import make_check
@@ -28,8 +29,19 @@ def index():
 @app.get('/urls')
 def urls_get():
     with db.Connection(app.config['DATABASE_URL']) as conn:
-        urls = db.get_urls_with_last_checks(conn)
-    return render_template('urls.html', urls=urls)
+        urls = db.get_urls(conn)
+        checks = db.get_last_checks(conn)
+        urls_with_last_checks = [
+            {
+                'id': url.id,
+                'name': url.name,
+                'created_at': [i.created_at for i in checks if i.url_id == url.id],
+                'status_code': [i.status_code for i in checks if i.url_id == url.id]
+            }
+            for url in urls
+        ]
+
+    return render_template('urls.html', urls=urls_with_last_checks)
 
 
 @app.post('/urls')
@@ -50,7 +62,7 @@ def urls_post():
             flash('Страница успешно добавлена', 'success')
             return redirect(url_for('url_info', id=url_id))
 
-    url_id = url.get('id')
+    url_id = url.id
     flash('Страница уже существует', 'info')
     return redirect(url_for('url_info', id=url_id))
 
@@ -70,11 +82,11 @@ def url_info(id: int):
 def check_url(id: int):
     with db.Connection(app.config['DATABASE_URL']) as conn:
         url = db.get_url_by_id(conn, id)
-        check = make_check(url.get('name'), id)
+        check = make_check(url.name)
         if not check:
             flash('Произошла ошибка при проверке', 'error')
             return redirect(url_for('url_info', id=id))
-        db.add_url_check(conn, check)
+        db.add_url_check(conn, check, id)
 
     flash('Страница успешно проверена', 'success')
     return redirect(url_for('url_info', id=id))

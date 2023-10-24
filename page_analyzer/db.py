@@ -1,5 +1,5 @@
 import psycopg2
-from psycopg2.extras import DictCursor
+from psycopg2.extras import NamedTupleCursor, DictCursor
 
 
 class Connection:
@@ -20,7 +20,7 @@ class Connection:
 
 
 def execute(connection, query: str, data=None, fetch: str = None):
-    with connection.cursor(cursor_factory=DictCursor) as cursor:
+    with connection.cursor(cursor_factory=NamedTupleCursor) as cursor:
         cursor.execute(query, data)
         result = None
         match fetch:
@@ -31,19 +31,24 @@ def execute(connection, query: str, data=None, fetch: str = None):
         return result
 
 
-def get_urls_with_last_checks(connection):
-    query = """
-            SELECT DISTINCT
-            ON (urls.id)
-            urls.id AS id,
-            urls.name AS name,
-            urls_checks.created_at AS created_at,
-            urls_checks.status_code AS status_code
-            FROM urls LEFT JOIN urls_checks ON urls.id = urls_checks.url_id
-            ORDER BY urls.id, urls_checks.id DESC
-            """
+def get_urls(connection):
+    query = 'SELECT id, name FROM urls ORDER BY id DESC'
     urls = execute(connection, query, fetch='all')
     return urls
+
+
+def get_last_checks(connection):
+    query = '''
+    SELECT DISTINCT 
+    ON (url_id)
+    url_id, 
+    created_at,
+    status_code
+    FROM urls_checks
+    ORDER BY url_id DESC
+    '''
+    last_checks = execute(connection, query, fetch='all')
+    return last_checks
 
 
 def get_url_checks(connection, url_check_id: int):
@@ -67,14 +72,15 @@ def get_url_by_name(connection, url: str):
 def add_url(connection, url: str):
     query = "INSERT INTO urls (name) VALUES (%s) RETURNING id"
     result = execute(connection, query, (url,), fetch='one')
-    return result.get('id')
+    return result.id
 
 
-def add_url_check(connection, check: dict):
+def add_url_check(connection, check: dict, url_id: int):
     query = """
     INSERT INTO urls_checks (url_id, status_code,
     h1, title, description)
     VALUES (%(url_id)s, %(status_code)s, %(h1)s,
     %(title)s, %(description)s)
     """
+    check['url_id'] = url_id
     execute(connection, query, check)

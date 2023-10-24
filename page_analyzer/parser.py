@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def make_check(url, id):
+def make_check(url):
     """
     Parses the page object from requests using BeautifulSoup and
     creates dict with information from it
@@ -23,7 +23,6 @@ def make_check(url, id):
         description = description['content']
 
     return {
-        'url_id': id,
         'status_code': request.status_code,
         'h1': h1,
         'title': title,
