@@ -1,5 +1,6 @@
 import os
 
+import psycopg2
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -28,20 +29,26 @@ def index():
 
 @app.get('/urls')
 def urls_get():
-    with db.Connection(app.config['DATABASE_URL']) as conn:
-        urls = db.get_urls(conn)
-        checks = db.get_last_checks(conn)
-        urls_with_last_checks = [
-            {
-                'id': url.id,
-                'name': url.name,
-                'created_at': [i.created_at for i in checks if i.url_id == url.id],
-                'status_code': [i.status_code for i in checks if i.url_id == url.id]
-            }
-            for url in urls
-        ]
+    conn = db.connect(app.config['DATABASE_URL'])
+    # можно спрятать
+    try:
+        with conn:
+            urls = db.get_urls(conn)
+        with conn:
+            checks = db.get_last_checks(conn)
+    except psycopg2.Error as e:
+        raise e
+    finally:
+        conn.close()
 
-    return render_template('urls.html', urls=urls_with_last_checks)
+    if checks:
+        for url in urls:
+            check = [c for c in checks if c['url_id'] == url['id']]
+            if check:
+                url['status_code'] = check[0]['status_code']
+                url['created_at'] = check[0]['created_at']
+
+    return render_template('urls.html', urls=urls)
 
 
 @app.post('/urls')
@@ -55,7 +62,7 @@ def urls_post():
 
     normalized_url = normalize_url(url_string)
 
-    with db.Connection(app.config['DATABASE_URL']) as conn:
+    with db.connect(app.config['DATABASE_URL']) as conn:
         url = db.get_url_by_name(conn, normalized_url)
         if not url:
             url_id = db.add_url(conn, normalized_url)
@@ -69,7 +76,7 @@ def urls_post():
 
 @app.get('/urls/<int:id>')
 def url_info(id: int):
-    with db.Connection(app.config['DATABASE_URL']) as conn:
+    with db.connect(app.config['DATABASE_URL']) as conn:
         url = db.get_url_by_id(conn, id)
         checks = db.get_url_checks(conn, id)
 
@@ -80,7 +87,7 @@ def url_info(id: int):
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id: int):
-    with db.Connection(app.config['DATABASE_URL']) as conn:
+    with db.connect(app.config['DATABASE_URL']) as conn:
         url = db.get_url_by_id(conn, id)
         check = make_check(url.name)
         if not check:
