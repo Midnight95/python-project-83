@@ -91,8 +91,9 @@ def check_url(id: int):
         check = make_check(url.name)
         if check:
             db.add_url_check(conn, check, id)
-            flash('Страница успешно проверена', 'success')
-        else:
+            if check['status_code'] == 200:
+                flash('Страница успешно проверена', 'success')
+        elif not check or check['status_code'] != 200:
             flash('Произошла ошибка при проверке', 'error')
     except psycopg2.Error as e:
         raise e

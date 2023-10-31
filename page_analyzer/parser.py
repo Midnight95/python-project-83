@@ -7,10 +7,11 @@ def make_check(url):
     Parses the page object from requests using BeautifulSoup and
     creates dict with information from it
     for the purpose of providing it to 'urls_checks' table
+
+    if web page is inaccessible returns None
     """
     try:
         request = requests.get(url, timeout=5)
-        request.raise_for_status()
     except requests.RequestException:
         return
 

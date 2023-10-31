@@ -2,12 +2,12 @@ import psycopg2
 from psycopg2.extras import NamedTupleCursor, RealDictCursor
 
 
-def connect(db_url):
+def connect(db_url: str):
     try:
         conn = psycopg2.connect(db_url)
         return conn
     except psycopg2.Error as e:
-        print('Can\'t connect to the database!')
+        print(f'Can\'t connect to the database! Error: {str(e)}')
         raise e
 
 
