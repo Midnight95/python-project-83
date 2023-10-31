@@ -31,7 +31,7 @@ def get_urls_with_last_checks(connection):
                 )
                 checks = cursor.fetchall()
     except psycopg2.Error as e:
-        message = f'\nError Message: {e}'
+        message = f'\nError has occurred!\nError message: {e}'
         raise DatabaseException(message)
     if checks:
         for url in urls:
@@ -51,7 +51,7 @@ def get_url_checks(connection, url_check_id: int):
                     (url_check_id,))
                 url_checks = cursor.fetchall()
     except psycopg2.Error as e:
-        message = f'\nError Message: {e}'
+        message = f'\nError has occurred!\nError message: {e}'
         raise DatabaseException(message)
     return url_checks
 
@@ -65,7 +65,7 @@ def get_url_by_id(connection, url_id: int):
                     (url_id,))
                 result = cursor.fetchone()
     except psycopg2.Error as e:
-        message = f'\nError Message: {e}'
+        message = f'\nError has occurred!\nError message: {e}'
         raise DatabaseException(message)
     return result
 
@@ -79,7 +79,7 @@ def get_url_by_name(connection, url: str):
                     (url,))
                 result = cursor.fetchone()
     except psycopg2.Error as e:
-        message = f'\nError Message: {e}'
+        message = f'\nError has occurred!\nError message: {e}'
         raise DatabaseException(message)
     return result
 
@@ -93,7 +93,7 @@ def add_url(connection, url: str):
                     (url,))
                 result = cursor.fetchone()
     except psycopg2.Error as e:
-        message = f'\nError Message: {e}'
+        message = f'\nError has occurred!\nError message: {e}'
         raise DatabaseException(message)
     return result.id
 
@@ -113,5 +113,5 @@ def add_url_check(connection, check: dict, url_id: int):
                     check
                 )
     except psycopg2.Error as e:
-        message = f'\nError Message: {e}'
+        message = f'\nError has occurred!\nError message: {e}'
         raise DatabaseException(message)
