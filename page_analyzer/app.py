@@ -85,6 +85,8 @@ def url_info(id: int):
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id: int):
+    message = {'message': 'Произошла ошибка при проверке', 'category': 'error'}
+
     conn = db.connect(app.config['DATABASE_URL'])
     try:
         url = db.get_url_by_id(conn, id)
@@ -92,9 +94,9 @@ def check_url(id: int):
         if check:
             db.add_url_check(conn, check, id)
             if check['status_code'] == 200:
-                flash('Страница успешно проверена', 'success')
-        elif not check or check['status_code'] != 200:
-            flash('Произошла ошибка при проверке', 'error')
+                message['message'] = 'Страница успешно проверена'
+                message['category'] = 'success'
+        flash(**message)
     except psycopg2.Error as e:
         raise e
     finally:
